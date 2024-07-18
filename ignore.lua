@@ -359,7 +359,7 @@ closeButton.Size = UDim2.new(0, 17, 0, 17)
 closeButton.ZIndex = 2
 closeButton.Parent = topbar
 
-closeButton.MouseButton1Click:Once(function()
+closeButton.Activated:Once(function()
     shamanScreenGui:Destroy()
     tooltipScreenGui:Destroy()
 end)
@@ -393,7 +393,7 @@ end)
 
 local Opened = true
 
-minimizeButton.MouseButton1Click:Connect(function()
+minimizeButton.Activated:Connect(function()
     Opened = not Opened
     
     topbar.Frame.Visible = Opened
@@ -470,7 +470,7 @@ editButton.MouseLeave:Connect(function()
     end
 end)
 
-editButton.MouseButton1Click:Connect(function()
+editButton.Activated:Connect(function()
     EditOpened = not EditOpened
     
     uiGradient.Enabled = EditOpened and true or false
@@ -785,16 +785,16 @@ sectionIcon.Size = UDim2.new(0, 13, 0, 13)
 sectionIcon.ZIndex = 1
 sectionIcon.Parent = section
 
-sectionButton.MouseButton1Click:Connect(function()
+sectionButton.Activated:Connect(function()
     Closed.Value = not Closed.Value
     --#d96163
-    
-    
+
     TweenService:Create(section, TweenInfo.new(.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {Size = Closed.Value and UDim2.new(0, 162, 0, SizeY + 4) or UDim2.new(0, 162, 0, 27)}):Play()
     TweenService:Create(sectionFrame, TweenInfo.new(.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {Size = Closed.Value and UDim2.new(0, 162, 0, SizeY) or UDim2.new(0, 162, 0, 23)}):Play()
     TweenService:Create(sectionIcon, TweenInfo.new(.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {ImageColor3 = Closed.Value and Color3.fromRGB(217, 97, 99) or Color3.fromRGB(217, 217, 217)}):Play()
     TweenService:Create(sectionIcon, TweenInfo.new(.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {Rotation = Closed.Value and 45 or 0}):Play()
 end)
+
 
 function sectiontable:Label(Info)
 Info.Text = Info.Text or "Label"
@@ -924,7 +924,7 @@ end)
 local KeybindConnection
 local Changing = false
 
-keybindButton.MouseButton1Click:Connect(function()
+keybindButton.Activated:Connect(function()
     if KeybindConnection then KeybindConnection:Disconnect() end
     Changing = true
     keybindFrameText.Text = "..."
@@ -991,7 +991,7 @@ textButton.BackgroundTransparency = 1
 textButton.Size = UDim2.new(0, 162, 0, 27)
 textButton.Parent = button
 
-textButton.MouseButton1Click:Connect(function()
+textButton.Activated:Connect(function()
     task.spawn(function()
         pcall(Info.Callback)
     end)
@@ -1165,7 +1165,7 @@ if Info.Default then
     end)
 end
 
-toggleButton.MouseButton1Click:Connect(function()
+toggleButton.Activated:Connect(function()
     Toggled = not Toggled
     insidetoggle:Set(Toggled)
 end)
@@ -1282,29 +1282,34 @@ local MaxSize = 1
 local SizeFromScale = (MinSize +  (MaxSize - MinSize)) * DefaultScale
 SizeFromScale = SizeFromScale - (SizeFromScale % 2)
 
-sliderButton.MouseButton1Down:Connect(function() -- Skidded from material ui hehe, sorry
-	local MouseMove, MouseKill
-	MouseMove = Mouse.Move:Connect(function()
-		local Px = library:GetXY(outerSlider)
-		local SizeFromScale = (MinSize +  (MaxSize - MinSize)) * Px
-		local Value = math.floor(Info.Minimum + ((Info.Maximum - Info.Minimum) * Px))
-		SizeFromScale = SizeFromScale - (SizeFromScale % 2)
-		TweenService:Create(innerSlider, TweenInfo.new(0.1), {Size = UDim2.new(Px,0,0,4)}):Play()
-		if Info.Flag ~= nil then
-		    library.Flags[Info.Flag] = Value
-		end
-		sliderValueText.Text = tostring(Value)..Info.Postfix
-		task.spawn(function()
-		    pcall(Info.Callback, Value)
+sliderButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		local MouseMove, MouseKill
+		MouseMove = UserInputService.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+				local Px = library:GetXY(outerSlider)
+				local SizeFromScale = (MinSize + (MaxSize - MinSize)) * Px
+				local Value = math.floor(Info.Minimum + ((Info.Maximum - Info.Minimum) * Px))
+				SizeFromScale = SizeFromScale - (SizeFromScale % 2)
+				TweenService:Create(innerSlider, TweenInfo.new(0.1), {Size = UDim2.new(Px, 0, 0, 4)}):Play()
+				if Info.Flag ~= nil then
+					library.Flags[Info.Flag] = Value
+				end
+				sliderValueText.Text = tostring(Value) .. Info.Postfix
+				task.spawn(function()
+					pcall(Info.Callback, Value)
+				end)
+			end
 		end)
-	end)
-	MouseKill = UserInputService.InputEnded:Connect(function(UserInput)
-		if UserInput.UserInputType == Enum.UserInputType.MouseButton1 then
-			MouseMove:Disconnect()
-			MouseKill:Disconnect()
-		end
-	end)
+		MouseKill = UserInputService.InputEnded:Connect(function(endInput)
+			if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+				MouseMove:Disconnect()
+				MouseKill:Disconnect()
+			end
+		end)
+	end
 end)
+
 end
 
 function sectiontable:Dropdown(Info)
@@ -1441,7 +1446,7 @@ dropdownContainerTextButton.MouseLeave:Connect(function()
     TweenService:Create(dropdownbuttonText, TweenInfo.new(.15, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {TextColor3 = Color3.fromRGB(191, 191, 191)}):Play()
 end)
 
-dropdownContainerTextButton.MouseButton1Click:Connect(function()
+dropdownContainerTextButton.Activated:Connect(function()
     DropdownOpened = false
     
     task.spawn(function()
@@ -1508,7 +1513,7 @@ Closed:GetPropertyChangedSignal("Value"):Connect(function()
     end
 end)
 
-dropdownButton.MouseButton1Click:Connect(function()
+dropdownButton.Activated:Connect(function()
     DropdownOpened = not DropdownOpened
     
     TweenService:Create(dropdownIcon, TweenInfo.new(.15, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {Rotation = DropdownOpened and -180 or -90}):Play()
@@ -1708,7 +1713,7 @@ radio.MouseLeave:Connect(function()
     end
 end)
 
-radioTextButton.MouseButton1Click:Connect(function()
+radioTextButton.Activated:Connect(function()
     task.spawn(function()
         pcall(Info.Callback, radioText.Text)
     end)
@@ -1741,7 +1746,7 @@ end)
 
 end
 
-radioButtonTextButton.MouseButton1Click:Connect(function()
+radioButtonTextButton.Activated:Connect(function()
     RadioOpened = not RadioOpened
     
     TweenService:Create(radioButtonIcon, TweenInfo.new(.15, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {ImageColor3 = RadioOpened and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(191, 191, 191)}):Play()
@@ -1779,7 +1784,7 @@ end
 return sectiontable
 end
 
-tabTextButton.MouseButton1Click:Connect(function()
+tabTextButton.Activated:Connect(function()
     TabSelected = tabFrame
     task.spawn(function()
     for _,v in pairs(main:GetChildren()) do

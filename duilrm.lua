@@ -2817,10 +2817,7 @@ function DiscordLib:Window(text)
 					DropdownFrameMain.Size = UDim2.new(0, 392, 0, framesize + 6)
 					DropdownFrameMainOutline.Size = UDim2.new(0, 396, 0, framesize + 10)
 				end
-				return DropFunc
-			end
-
-function DropFunc:Remove()
+				function DropFunc:Remove()
 	if itemcount > 0 then
 		local lastItem = DropItemHolder:FindFirstChild("Item")
 		if lastItem then
@@ -2844,6 +2841,8 @@ function DropFunc:Remove()
 		end
 	end
 end
+				return DropFunc
+			end
 
 			function ChannelContent:Colorpicker(text, preset, callback)
 				local OldToggleColor = Color3.fromRGB(0, 0, 0)
